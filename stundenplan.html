@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stundenplan HG10A</title>
+  <style>
+    :root {
+      --bg: #0b0f18;
+      --sidebar: #121722;
+      --panel: #171d2b;
+      --panel-2: #1b2233;
+      --field: #0f1420;
+      --cell: #1a2030;
+      --cell-border: #101622;
+      --line: #293145;
+      --text: #f4f7fb;
+      --heading: #ffffff;
+      --muted: #8d99b5;
+      --list-text: #cbd5e1;
+      --lesson-text: #c1c8d8;
+      --period-text: #657292;
+      --nav-text: #b8c2dd;
+      --purple: #8b5cf6;
+      --purple-2: #6d5dfc;
+      --danger: #ef4444;
+      --green: #22c55e;
+      --blue: #0ea5e9;
+      --orange: #f59e0b;
+    }
+
+    body.light {
+      --bg: #f3f6fb;
+      --sidebar: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #eef3fb;
+      --field: #f8fafc;
+      --cell: #eef3fb;
+      --cell-border: #d7dfef;
+      --line: #d7dfef;
+      --text: #172033;
+      --heading: #111827;
+      --muted: #64748b;
+      --list-text: #334155;
+      --lesson-text: #334155;
+      --period-text: #64748b;
+      --nav-text: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 262px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      font-size: 22px;
+      box-shadow: 0 12px 28px rgba(124, 58, 237, 0.34);
+    }
+
+    .brand strong {
+      display: block;
+      color: #9b79ff;
+      font-size: 17px;
+    }
+
+    .brand span,
+    .side-footer span,
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    nav {
+      padding: 18px 14px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 42px;
+      padding: 0 14px;
+      margin-bottom: 7px;
+      color: var(--nav-text);
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      background: rgba(139, 92, 246, 0.22);
+      color: #a78bfa;
+      outline: 1px solid rgba(139, 92, 246, 0.45);
+    }
+
+    .nav-divider {
+      height: 1px;
+      margin: 20px 0;
+      background: var(--line);
+    }
+
+    .side-footer {
+      margin-top: auto;
+      padding: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .class-select {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 38px;
+      margin-top: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--heading);
+      background: var(--field);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    main {
+      min-width: 0;
+      padding: 14px 22px 28px 28px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: 26px;
+      line-height: 1.12;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button,
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple-2), #a855f7);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(139, 92, 246, 0.25);
+    }
+
+    button.secondary,
+    .file-button {
+      background: #182033;
+      border-color: var(--line);
+      color: #c7d2fe;
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #251821;
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fecaca;
+      box-shadow: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 76px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .stat-icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(139, 92, 246, 0.18);
+      font-size: 20px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .schedule {
+      display: grid;
+      grid-template-columns: 82px repeat(5, minmax(165px, 1fr));
+      gap: 3px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .head,
+    .period,
+    .cell {
+      background: var(--panel);
+      border: 1px solid var(--cell-border);
+      border-radius: 8px;
+    }
+
+    .head {
+      display: grid;
+      place-items: center;
+      height: 44px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .period {
+      display: grid;
+      place-items: center;
+      min-height: 78px;
+      padding: 7px;
+      text-align: center;
+    }
+
+    .period strong {
+      display: block;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .period span {
+      display: block;
+      margin-top: 7px;
+      color: var(--period-text);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .cell {
+      min-height: 78px;
+      padding: 0;
+      background: var(--cell);
+    }
+
+    .lesson {
+      height: 100%;
+      min-height: 78px;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 15%, var(--cell));
+      cursor: pointer;
+    }
+
+    .lesson.empty {
+      border-left-color: transparent;
+      background: var(--cell);
+      cursor: default;
+    }
+
+    .lesson strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-size: 14px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .lesson span {
+      display: block;
+      color: var(--lesson-text);
+      font-size: 11px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .management {
+      margin-top: 26px;
+    }
+
+    .view-section[hidden] {
+      display: none;
+    }
+
+    .management h2,
+    .settings h2,
+    .calendar h2 {
+      margin: 0 0 12px;
+      font-size: 26px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+    }
+
+    input[type="color"] {
+      padding: 4px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .info-card {
+      min-height: 150px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .info-card h3 {
+      margin: 0 0 12px;
+      color: var(--heading);
+      font-size: 16px;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--list-text);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .info-list strong {
+      color: var(--heading);
+    }
+
+    .settings-form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .calendar-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .calendar-item {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .calendar-date {
+      color: var(--purple);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .calendar-title {
+      font-weight: 900;
+    }
+
+    .calendar-type {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--field);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    dialog {
+      width: min(440px, calc(100% - 28px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .dialog-body {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .dialog-body h2 {
+      margin: 0 0 4px;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 1050px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+      }
+
+      nav,
+      .side-footer {
+        display: none;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .info-grid,
+      .settings-form {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      main {
+        padding: 14px;
+      }
+
+      .topbar,
+      .actions {
+        display: grid;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .app {
+        display: block;
+      }
+
+      aside,
+      .actions,
+      .stats,
+      .management {
+        display: none;
+      }
+
+      main {
+        padding: 0;
+      }
+
+      .head,
+      .period,
+      .cell,
+      .lesson {
+        color: #000;
+        background: #fff !important;
+        border-color: #000;
+      }
+
+      .lesson strong,
+      .lesson span,
+      .period span {
+        color: #000;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="logo">▦</div>
+        <div>
+          <strong>Stundenplan</strong>
+          <span>Schulplaner 2026</span>
+        </div>
+      </div>
+      <nav>
+        <div class="nav-item active" data-view-target="planView">▣ Stundenplan</div>
+        <div class="nav-item" data-view-target="managementView">▤ Fächer</div>
+        <div class="nav-item" data-view-target="calendarView">▥ Kalender</div>
+        <div class="nav-item" data-view-target="settingsView">⚙ Einstellungen</div>
+        <div class="nav-divider"></div>
+        <div class="nav-item" id="sidePrint">▧ Drucken</div>
+        <div class="nav-item" id="exportBtn">⇩ Exportieren</div>
+        <label class="nav-item file-button" for="importFile">⇧ Importieren</label>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </nav>
+      <div class="side-footer">
+        <span>KLASSE</span>
+        <div class="class-select">HG10A <span>⌄</span></div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="topbar">
+        <div>
+          <h1>Stundenplan</h1>
+          <div class="muted">Wochenübersicht - HG10A BCJ-Holztechnik</div>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="modeBtn" type="button">☀ Weißmodus</button>
+          <button class="secondary" id="clearBtn" type="button">⌫ Leeren</button>
+          <button id="newBtn" type="button">＋ Neues Fach</button>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Statistik">
+        <div class="stat">
+          <div class="stat-icon">📚</div>
+          <div><strong id="statLessons">0</strong><span class="muted">Unterrichtsstunden</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">📖</div>
+          <div><strong id="statSubjects">0</strong><span class="muted">Fächer</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">⏰</div>
+          <div><strong id="statHours">0h</strong><span class="muted">Wochenstunden</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">FREE</div>
+          <div><strong id="statFree">0</strong><span class="muted">Freistunden</span></div>
+        </div>
+      </section>
+
+      <section class="view-section" id="planView">
+        <div class="schedule" id="schedule" aria-label="Stundenplan"></div>
+      </section>
+
+      <section class="management view-section" id="managementView" hidden>
+        <h2>Fächerverwaltung</h2>
+        <form class="form-grid" id="lessonForm">
+          <label>Tag
+            <select id="day" required></select>
+          </label>
+          <label>Stunde
+            <select id="period" required></select>
+          </label>
+          <label>Fach
+            <input id="subject" placeholder="z. B. Ker" required>
+          </label>
+          <label>Lehrer/Raum
+            <input id="teacher" placeholder="z. B. F321">
+          </label>
+          <label>Gruppe
+            <input id="room" placeholder="z. B. fu-c">
+          </label>
+          <label>Farbe
+            <input id="color" type="color" value="#8b5cf6">
+          </label>
+          <button type="submit">Eintragen</button>
+        </form>
+      </section>
+
+      <section class="calendar view-section" id="calendarView" hidden>
+        <h2>Kalender</h2>
+        <form class="form-grid" id="calendarForm">
+          <label>Datum
+            <input id="eventDate" type="date" required>
+          </label>
+          <label>Titel
+            <input id="eventTitle" placeholder="z. B. Praxisblock" required>
+          </label>
+          <label>Art
+            <select id="eventType">
+              <option>Theorie</option>
+              <option>Praxis</option>
+              <option>Praktikum</option>
+              <option>Prüfung</option>
+              <option>Sonstiges</option>
+            </select>
+          </label>
+          <label>Notiz
+            <input id="eventNote" placeholder="z. B. Werkstatt">
+          </label>
+          <button type="submit">Termin eintragen</button>
+        </form>
+        <div class="calendar-list" id="calendarList"></div>
+      </section>
+
+      <section class="settings view-section" id="settingsView" hidden>
+        <h2>Einstellungen</h2>
+        <div class="info-grid">
+          <article class="info-card">
+            <h3>Klassendaten</h3>
+            <ul class="info-list">
+              <li><strong>Klasse:</strong> HG10A</li>
+              <li><strong>Bereich:</strong> BCJ - Holztechnik</li>
+              <li><strong>Schule:</strong> Berufliche Schule 11, Nürnberg</li>
+              <li><strong>Stand:</strong> 2025/2026</li>
+            </ul>
+          </article>
+          <article class="info-card">
+            <h3>Theorie</h3>
+            <ul class="info-list" id="theoryList"></ul>
+          </article>
+          <article class="info-card">
+            <h3>Praxisblock</h3>
+            <ul class="info-list" id="practiceList"></ul>
+          </article>
+          <article class="info-card">
+            <h3>Konto</h3>
+            <ul class="info-list" id="accountList"></ul>
+          </article>
+        </div>
+
+        <form class="settings-form" id="settingsForm">
+          <label>Darstellung
+            <select id="themeSelect">
+              <option value="dark">Nachtmodus</option>
+              <option value="light">Weißmodus</option>
+            </select>
+          </label>
+          <label>Kontoname
+            <input id="accountName" placeholder="Dein Name">
+          </label>
+          <label>E-Mail / Konto
+            <input id="accountEmail" placeholder="name@schule.de">
+          </label>
+          <label>Theorie Telefon
+            <input id="theoryPhone">
+          </label>
+          <label>Werkstatt Telefon
+            <input id="workshopPhone">
+          </label>
+          <label>Praxisblock hinzufügen
+            <input id="practiceInput" placeholder="z. B. 01.09.26 - 05.09.26">
+          </label>
+          <label>Praktikumszeit hinzufügen
+            <input id="internshipInput" placeholder="z. B. 4. in den Ferien">
+          </label>
+          <button type="submit">Speichern</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="editDialog">
+    <form class="dialog-body" id="editForm" method="dialog">
+      <h2>Stunde bearbeiten</h2>
+      <input id="editKey" type="hidden">
+      <label>Fach
+        <input id="editSubject" required>
+      </label>
+      <label>Lehrer/Raum
+        <input id="editTeacher">
+      </label>
+      <label>Gruppe
+        <input id="editRoom">
+      </label>
+      <label>Farbe
+        <input id="editColor" type="color">
+      </label>
+      <div class="dialog-actions">
+        <button class="danger" type="button" id="deleteBtn">Löschen</button>
+        <button class="secondary" value="cancel">Abbrechen</button>
+        <button value="save">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+    const periods = [
+      { nr: "0", time: "" },
+      { nr: "1", time: "08:00\n08:45" },
+      { nr: "2", time: "08:45\n09:30" },
+      { nr: "3", time: "09:45\n10:30" },
+      { nr: "4", time: "10:30\n11:15" },
+      { nr: "5", time: "11:15\n12:00" },
+      { nr: "6", time: "12:00\n12:45" },
+      { nr: "7", time: "12:45\n13:30" },
+      { nr: "8", time: "13:30\n14:15" },
+      { nr: "9", time: "14:30\n15:15" },
+      { nr: "10", time: "15:15\n16:00" }
+    ];
+
+    const colors = {
+      Ker: "#8b5cf6",
+      Roe: "#0ea5e9",
+      Bam: "#f97316",
+      SIM: "#22c55e",
+      Tar: "#14b8a6",
+      Noe: "#ef4444",
+      KIr: "#f59e0b",
+      SCC: "#06b6d4",
+      Ayo: "#6366f1"
+    };
+
+    const defaultSchedule = {
+      "Montag|1": { subject: "Ker / Roe", teacher: "F329 / G112", room: "fu-c", color: colors.Ker },
+      "Montag|2": { subject: "Ker / Roe", teacher: "F329 / G112", room: "fu-c", color: colors.Ker },
+      "Montag|3": { subject: "Ker / Roe", teacher: "F321 / G112", room: "fu-c", color: colors.Ker },
+      "Montag|4": { subject: "Ker / Roe", teacher: "F321 / G112", room: "fu-c", color: colors.Ker },
+
+      "Dienstag|1": { subject: "Bam", teacher: "F32", room: "PUG", color: colors.Bam },
+      "Dienstag|2": { subject: "Bam", teacher: "F29", room: "PUG", color: colors.Bam },
+      "Dienstag|3": { subject: "Noe", teacher: "F321", room: "RK", color: colors.Noe },
+      "Dienstag|4": { subject: "Ker", teacher: "F321", room: "fu", color: colors.Ker },
+      "Dienstag|5": { subject: "Ker", teacher: "F321", room: "fu", color: colors.Ker },
+      "Dienstag|7": { subject: "SIM / Tar", teacher: "G106/2 / G106/1", room: "fu", color: colors.SIM },
+      "Dienstag|8": { subject: "SIM / Tar", teacher: "G106/2 / G106/1", room: "fu", color: colors.SIM },
+      "Dienstag|9": { subject: "KIr / Tar", teacher: "G106/2 / G106/1", room: "fu", color: colors.KIr },
+      "Dienstag|10": { subject: "KIr / Tar", teacher: "G106/2 / G106/1", room: "fu", color: colors.KIr },
+
+      "Mittwoch|1": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Mittwoch|2": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Mittwoch|3": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Mittwoch|4": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Mittwoch|5": { subject: "SIM / Tar", teacher: "G106/2 / G106/1", room: "fu", color: colors.SIM },
+      "Mittwoch|7": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Mittwoch|8": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Mittwoch|9": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Mittwoch|10": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+
+      "Donnerstag|1": { subject: "Roe / Tar", teacher: "G106/1 / G106/2", room: "p", color: colors.Roe },
+      "Donnerstag|2": { subject: "Roe / Tar", teacher: "G106/1 / G106/2", room: "p", color: colors.Roe },
+      "Donnerstag|3": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Donnerstag|4": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p", color: colors.SIM },
+      "Donnerstag|5": { subject: "SIM / Ker", teacher: "G106/2 / G106/1", room: "fu", color: colors.SIM },
+      "Donnerstag|7": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Donnerstag|8": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Donnerstag|9": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+      "Donnerstag|10": { subject: "SIM / Roe", teacher: "G106/1 / G106/2", room: "p / fu", color: colors.SIM },
+
+      "Freitag|1": { subject: "Ker", teacher: "F321", room: "D", color: colors.Ker },
+      "Freitag|2": { subject: "Ker", teacher: "F321", room: "D", color: colors.Ker },
+      "Freitag|3": { subject: "Ker", teacher: "F321", room: "fu", color: colors.Ker },
+      "Freitag|4": { subject: "Ayo", teacher: "F321", room: "fu", color: colors.Ayo },
+      "Freitag|5": { subject: "SCC", teacher: "HVO", room: "Sport", color: colors.SCC },
+      "Freitag|6": { subject: "SCC", teacher: "HVO", room: "Sport", color: colors.SCC }
+    };
+
+    const storageKey = "stundenplan.hg10a.v2";
+    const settingsKey = "stundenplan.hg10a.settings.v1";
+    const defaultSettings = {
+      theme: "dark",
+      accountName: "",
+      accountEmail: "",
+      theoryPhone: "231-8883",
+      workshopPhone: "231-8870",
+      theoryTimes: [
+        "Theorie laut Wochenplan: Montag bis Freitag",
+        "Telefon Theorie: 231-8883",
+        "Telefon Werkstatt: 231-8870"
+      ],
+      practiceBlocks: [
+        "18.09.25 - 30.10.25",
+        "12.01.26 - 13.02.26",
+        "20.04.26 - 22.05.26",
+        "20.07.26 - 31.07.26"
+      ],
+      internships: [
+        "1. 17.11.25 - 21.11.25",
+        "2. und 3. 26.01.26 - 05.02.26",
+        "4. in den Ferien"
+      ],
+      calendarEvents: [
+        { date: "2025-09-18", title: "Praxisblock Start", type: "Praxis", note: "18.09.25 - 30.10.25" },
+        { date: "2025-11-17", title: "Praktikum 1", type: "Praktikum", note: "17.11.25 - 21.11.25" },
+        { date: "2026-01-12", title: "Praxisblock Start", type: "Praxis", note: "12.01.26 - 13.02.26" },
+        { date: "2026-01-26", title: "Praktikum 2 und 3", type: "Praktikum", note: "26.01.26 - 05.02.26" },
+        { date: "2026-04-20", title: "Praxisblock Start", type: "Praxis", note: "20.04.26 - 22.05.26" },
+        { date: "2026-07-20", title: "Praxisblock Start", type: "Praxis", note: "20.07.26 - 31.07.26" }
+      ]
+    };
+
+    const scheduleEl = document.querySelector("#schedule");
+    const daySelect = document.querySelector("#day");
+    const periodSelect = document.querySelector("#period");
+    const lessonForm = document.querySelector("#lessonForm");
+    const editDialog = document.querySelector("#editDialog");
+    const editForm = document.querySelector("#editForm");
+    const deleteBtn = document.querySelector("#deleteBtn");
+    const clearBtn = document.querySelector("#clearBtn");
+    const newBtn = document.querySelector("#newBtn");
+    const importFile = document.querySelector("#importFile");
+    const exportBtn = document.querySelector("#exportBtn");
+    const modeBtn = document.querySelector("#modeBtn");
+    const calendarForm = document.querySelector("#calendarForm");
+    const saved = localStorage.getItem(storageKey);
+    const savedSettings = localStorage.getItem(settingsKey);
+    let schedule = saved ? JSON.parse(saved) : structuredClone(defaultSchedule);
+    let settings = savedSettings ? JSON.parse(savedSettings) : structuredClone(defaultSettings);
+    settings = { ...structuredClone(defaultSettings), ...settings };
+
+    days.forEach((day) => daySelect.add(new Option(day, day)));
+    periods.forEach((period) => periodSelect.add(new Option(`${period.nr}. Stunde`, period.nr)));
+
+    function key(day, period) {
+      return `${day}|${period}`;
+    }
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(schedule));
+    }
+
+    function saveSettings() {
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle("light", settings.theme === "light");
+      document.querySelector("#themeSelect").value = settings.theme;
+      modeBtn.textContent = settings.theme === "light" ? "☾ Nachtmodus" : "☀ Weißmodus";
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll(".view-section").forEach((section) => {
+        section.hidden = section.id !== viewId;
+      });
+      document.querySelectorAll("[data-view-target]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.viewTarget === viewId);
+      });
+    }
+
+    function render() {
+      scheduleEl.innerHTML = "";
+      scheduleEl.append(document.createElement("div"));
+      days.forEach((day) => {
+        const head = document.createElement("div");
+        head.className = "head";
+        head.textContent = day;
+        scheduleEl.append(head);
+      });
+
+      periods.forEach((period) => {
+        const periodBox = document.createElement("div");
+        periodBox.className = "period";
+        periodBox.innerHTML = `<div><strong>${period.nr}</strong><span>${period.time.replace("\n", "<br>")}</span></div>`;
+        scheduleEl.append(periodBox);
+
+        days.forEach((day) => {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const item = schedule[key(day, period.nr)];
+          const lesson = document.createElement("div");
+          lesson.className = item ? "lesson" : "lesson empty";
+          lesson.style.setProperty("--accent", item?.color || "#293145");
+
+          if (item) {
+            lesson.innerHTML = "<strong></strong><span></span><span></span>";
+            lesson.querySelector("strong").textContent = item.subject;
+            lesson.querySelectorAll("span")[0].textContent = item.teacher || "";
+            lesson.querySelectorAll("span")[1].textContent = item.room || "";
+            lesson.addEventListener("click", () => openEditor(key(day, period.nr), item));
+          }
+
+          cell.append(lesson);
+          scheduleEl.append(cell);
+        });
+      });
+
+      updateStats();
+      renderSettings();
+      renderCalendar();
+    }
+
+    function updateStats() {
+      const entries = Object.values(schedule);
+      const occupied = entries.length;
+      const subjects = new Set(entries.flatMap((item) => item.subject.split("/").map((s) => s.trim()).filter(Boolean)));
+      const totalSlots = days.length * periods.length;
+      document.querySelector("#statLessons").textContent = occupied;
+      document.querySelector("#statSubjects").textContent = subjects.size;
+      document.querySelector("#statHours").textContent = `${(occupied * 0.75).toFixed(1)}h`;
+      document.querySelector("#statFree").textContent = totalSlots - occupied;
+    }
+
+    function openEditor(itemKey, item) {
+      document.querySelector("#editKey").value = itemKey;
+      document.querySelector("#editSubject").value = item.subject || "";
+      document.querySelector("#editTeacher").value = item.teacher || "";
+      document.querySelector("#editRoom").value = item.room || "";
+      document.querySelector("#editColor").value = item.color || "#8b5cf6";
+      editDialog.showModal();
+    }
+
+    function renderSettings() {
+      applyTheme();
+      document.querySelector("#accountName").value = settings.accountName || "";
+      document.querySelector("#accountEmail").value = settings.accountEmail || "";
+      document.querySelector("#theoryPhone").value = settings.theoryPhone;
+      document.querySelector("#workshopPhone").value = settings.workshopPhone;
+      settings.theoryTimes = [
+        "Theorie laut Wochenplan: Montag bis Freitag",
+        `Telefon Theorie: ${settings.theoryPhone}`,
+        `Telefon Werkstatt: ${settings.workshopPhone}`
+      ];
+
+      const theoryList = document.querySelector("#theoryList");
+      const practiceList = document.querySelector("#practiceList");
+      const accountList = document.querySelector("#accountList");
+      theoryList.innerHTML = "";
+      practiceList.innerHTML = "";
+      accountList.innerHTML = "";
+
+      [
+        `Name: ${settings.accountName || "noch nicht eingetragen"}`,
+        `Konto/E-Mail: ${settings.accountEmail || "noch nicht eingetragen"}`,
+        `Modus: ${settings.theme === "light" ? "Weißmodus" : "Nachtmodus"}`
+      ].forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        accountList.append(li);
+      });
+
+      settings.theoryTimes.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        theoryList.append(li);
+      });
+
+      settings.practiceBlocks.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Praxisblock ${index + 1}:</strong> ${item}`;
+        practiceList.append(li);
+      });
+
+      settings.internships.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Praktikumszeit:</strong> ${item}`;
+        practiceList.append(li);
+      });
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "";
+      const [year, month, day] = dateValue.split("-");
+      return `${day}.${month}.${year}`;
+    }
+
+    function renderCalendar() {
+      const list = document.querySelector("#calendarList");
+      list.innerHTML = "";
+      const events = (settings.calendarEvents || [])
+        .map((event, originalIndex) => ({ ...event, originalIndex }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (!events.length) {
+        const empty = document.createElement("div");
+        empty.className = "calendar-item";
+        empty.textContent = "Noch keine Termine eingetragen.";
+        list.append(empty);
+        return;
+      }
+
+      events.forEach((event) => {
+        const item = document.createElement("div");
+        item.className = "calendar-item";
+        item.innerHTML = `
+          <div class="calendar-date"></div>
+          <div>
+            <div class="calendar-title"></div>
+            <div class="calendar-type"></div>
+          </div>
+          <button class="danger" type="button">Löschen</button>
+        `;
+        item.querySelector(".calendar-date").textContent = formatDate(event.date);
+        item.querySelector(".calendar-title").textContent = event.title;
+        item.querySelector(".calendar-type").textContent = `${event.type}${event.note ? ` - ${event.note}` : ""}`;
+        item.querySelector("button").addEventListener("click", () => {
+          settings.calendarEvents.splice(event.originalIndex, 1);
+          saveSettings();
+          renderCalendar();
+        });
+        list.append(item);
+      });
+    }
+
+    lessonForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const itemKey = key(daySelect.value, periodSelect.value);
+      schedule[itemKey] = {
+        subject: document.querySelector("#subject").value.trim(),
+        teacher: document.querySelector("#teacher").value.trim(),
+        room: document.querySelector("#room").value.trim(),
+        color: document.querySelector("#color").value
+      };
+      save();
+      render();
+      lessonForm.reset();
+      document.querySelector("#color").value = "#8b5cf6";
+    });
+
+    editForm.addEventListener("submit", () => {
+      const itemKey = document.querySelector("#editKey").value;
+      schedule[itemKey] = {
+        subject: document.querySelector("#editSubject").value.trim(),
+        teacher: document.querySelector("#editTeacher").value.trim(),
+        room: document.querySelector("#editRoom").value.trim(),
+        color: document.querySelector("#editColor").value
+      };
+      save();
+      render();
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      delete schedule[document.querySelector("#editKey").value];
+      save();
+      render();
+      editDialog.close();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      if (!confirm("Stundenplan leeren?")) return;
+      schedule = {};
+      save();
+      render();
+    });
+
+    newBtn.addEventListener("click", () => {
+      showView("managementView");
+      document.querySelector("#subject").focus();
+      document.querySelector(".management").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.querySelectorAll("[data-view-target]").forEach((item) => {
+      item.addEventListener("click", () => showView(item.dataset.viewTarget));
+    });
+
+    modeBtn.addEventListener("click", () => {
+      settings.theme = settings.theme === "light" ? "dark" : "light";
+      saveSettings();
+      applyTheme();
+      renderSettings();
+    });
+
+    document.querySelector("#sidePrint").addEventListener("click", () => window.print());
+
+    exportBtn.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify({ schedule, settings }, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "stundenplan-hg10a.json";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    importFile.addEventListener("change", async () => {
+      const file = importFile.files[0];
+      if (!file) return;
+      const data = JSON.parse(await file.text());
+      schedule = data.schedule || data;
+      settings = data.settings || settings;
+      save();
+      saveSettings();
+      render();
+      importFile.value = "";
+    });
+
+    document.querySelector("#settingsForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const practiceInput = document.querySelector("#practiceInput");
+      const internshipInput = document.querySelector("#internshipInput");
+      settings.theme = document.querySelector("#themeSelect").value;
+      settings.accountName = document.querySelector("#accountName").value.trim();
+      settings.accountEmail = document.querySelector("#accountEmail").value.trim();
+      settings.theoryPhone = document.querySelector("#theoryPhone").value.trim();
+      settings.workshopPhone = document.querySelector("#workshopPhone").value.trim();
+
+      if (practiceInput.value.trim()) {
+        settings.practiceBlocks.push(practiceInput.value.trim());
+      }
+
+      if (internshipInput.value.trim()) {
+        settings.internships.push(internshipInput.value.trim());
+      }
+
+      practiceInput.value = "";
+      internshipInput.value = "";
+      saveSettings();
+      renderSettings();
+    });
+
+    calendarForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      settings.calendarEvents.push({
+        date: document.querySelector("#eventDate").value,
+        title: document.querySelector("#eventTitle").value.trim(),
+        type: document.querySelector("#eventType").value,
+        note: document.querySelector("#eventNote").value.trim()
+      });
+      saveSettings();
+      renderCalendar();
+      calendarForm.reset();
+    });
+
+    render();
+  </script>
+</body>
+</html>
